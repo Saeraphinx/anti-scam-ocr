@@ -59,7 +59,7 @@ async function init() {
             }
 
             
-            if (LOG_CHANNEL || LOG_CHANNEL !== "") {
+            if (LOG_CHANNEL && LOG_CHANNEL !== "") {
                 const logChannel = await bot.channels.fetch(LOG_CHANNEL);
                 if (logChannel && logChannel?.isSendable()) {
                     let words = [...new Set(result.bannedWords.map(bw => bw.word))];
@@ -100,4 +100,5 @@ if (process.argv[1] === import.meta.filename) {
     process.on('SIGINT', async () => {
         await stop();
     });
+
 }
