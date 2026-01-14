@@ -23,6 +23,7 @@ services:
       - SHOULD_PUNISH: "false"
       - TIMEOUT_DURATION: "7d"
       - SCAN_EVERYTHING: "true"
+      - TRIGGERS_BEFORE_ACTION: "1"
 ```
 
 ## Environment Variables
@@ -50,5 +51,7 @@ SHOULD_PUNISH="true"
 TIMEOUT_DURATION="7d"
 # whether to scan messages from all users, including bots & users that the bot cannot moderate
 SCAN_EVERYTHING="true"
+# number of triggers before punishment action is taken (timeout/deletion)
+TRIGGERS_BEFORE_ACTION="1"
 
 ```

@@ -1,4 +1,4 @@
-import { ActivityType, Client, Colors, EmbedBuilder, IntentsBitField } from "discord.js";
+import { ActivityType, Client, Colors, EmbedBuilder, IntentsBitField, Snowflake } from "discord.js";
 import { MessageAnalyzer } from "./analyzeMessage.ts";
 import 'dotenv/config'
 import ms, { StringValue } from "ms";
@@ -14,7 +14,9 @@ async function init() {
     const SHOULD_PUNISH = process.env.SHOULD_PUNISH ? process.env.SHOULD_PUNISH === `true` : "true";
     const TIMEOUT_DURATION = process.env.TIMEOUT_DURATION ? ms(process.env.TIMEOUT_DURATION as StringValue) : ms("7d");
     const SCAN_EVERYTHING = process.env.SCAN_EVERYTHING ? process.env.SCAN_EVERYTHING === "true" : true;
+    const TRIGGERS_BEFORE_ACTION = process.env.TRIGGERS_BEFORE_ACTION ? parseInt(process.env.TRIGGERS_BEFORE_ACTION) : 1;
 
+    let triggeredIds: Snowflake[] = []
     const bot = new Client({
         intents: [IntentsBitField.Flags.MessageContent, IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages],
         presence: {
@@ -61,6 +63,9 @@ async function init() {
 
         if (result.foundWords) {
             console.log(`Detected banned words in message ${message.id}: ${result.bannedWords.join(", ")}`);
+            triggeredIds.push(message.author.id);
+            let triggerCount = triggeredIds.filter(id => id === message.author.id).length;
+            
             if (SHOULD_DELETE && message.deletable) {
                 await message.delete().catch((err) => {
                     console.error(err);
@@ -74,7 +79,7 @@ async function init() {
             }
 
             if (SHOULD_PUNISH) {
-                if (message.member && message.member.moderatable) {
+                if (message.member && message.member.moderatable && triggerCount >= TRIGGERS_BEFORE_ACTION) {
                     message.member.timeout(TIMEOUT_DURATION).catch((err) => {
                         console.error(err);
                         punished = "No (Error)";
@@ -100,9 +105,11 @@ async function init() {
                         .addFields({ name: "User", value: `${message.author.toString()}`, inline: true })
                         .addFields({ name: "Channel", value: `${message.channel.toString()}`, inline: true })
                         .addFields({ name: "Message ID", value: `${message.id}`, inline: true })
+                        .addFields({ name: "Deleted", value: `${deleted} `, inline: true })
+                        .addFields({ name: "Punished", value: `${punished} `, inline: true })
+                        .addFields({ name: "Times Triggered", value: `${triggerCount} `, inline: true })
                         .setColor(Colors.Red)
                         .setTimestamp()
-                        .setFooter({ text: `Deleted: ${deleted} | Punished: ${punished}` });
                     logChannel.send({ embeds: [embed] }).catch(console.error);
                 }
             }
