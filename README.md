@@ -8,7 +8,7 @@ Create a `docker-compose.yml` file with the following content:
 version: "3.8"
 
 services:
-  discord-sync:
+  anti-scam-ocr:
     image: ghcr.io/saeraphinx/anti-scam-ocr:latest
     container_name: anti-scam-ocr
     restart: unless-stopped
@@ -50,4 +50,5 @@ SHOULD_PUNISH="true"
 TIMEOUT_DURATION="7d"
 # whether to scan messages from all users, including bots & users that the bot cannot moderate
 SCAN_EVERYTHING="true"
+
 ```
