@@ -56,20 +56,34 @@ async function init() {
         }
 
         let result = await messageAnalyzer.analyzeMessage(message);
+        let deleted = "No (Config)";
+        let punished = "No (Config)";
 
         if (result.foundWords) {
             console.log(`Detected banned words in message ${message.id}: ${result.bannedWords.join(", ")}`);
             if (SHOULD_DELETE && message.deletable) {
-                await message.delete().catch(console.error);
+                await message.delete().catch((err) => {
+                    console.error(err);
+                    deleted = "No (Error)";
+                }).then(() => {
+                    deleted = "Yes";
+                });
             } else {
                 console.warn(`Cannot delete message ${message.id}`);
+                deleted = "No (Cannot Delete)";
             }
 
             if (SHOULD_PUNISH) {
                 if (message.member && message.member.moderatable) {
-                    message.member.timeout(TIMEOUT_DURATION).catch(console.error);
+                    message.member.timeout(TIMEOUT_DURATION).catch((err) => {
+                        console.error(err);
+                        punished = "No (Error)";
+                    }).then(() => {
+                        punished = `Yes (for ${ms(TIMEOUT_DURATION, { long: true })})`;
+                    });
                 } else {
                     console.warn(`Cannot punish member ${message.member?.id} in message ${message.id}`);
+                    punished = "No (Cannot Moderate)";
                 }
             }
 
@@ -87,7 +101,8 @@ async function init() {
                         .addFields({ name: "Channel", value: `${message.channel.toString()}`, inline: true })
                         .addFields({ name: "Message ID", value: `${message.id}`, inline: true })
                         .setColor(Colors.Red)
-                        .setTimestamp();
+                        .setTimestamp()
+                        .setFooter({ text: `Deleted: ${deleted} | Punished: ${punished}` });
                     logChannel.send({ embeds: [embed] }).catch(console.error);
                 }
             }
