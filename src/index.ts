@@ -10,9 +10,10 @@ async function init() {
     const IS_WHITELIST = process.env.IS_WHITELIST === "true";
     const BANNED_WORDS = process.env.BANNED_WORDS?.split(",") || ["crypto casino", "special promo code", "withdrawl successful", "free gift"];
     const LOG_CHANNEL = process.env.LOG_CHANNEL || "";
-    const SHOULD_DELETE = process.env.SHOULD_DELETE === "true";
-    const SHOULD_PUNISH = process.env.SHOULD_PUNISH === "true";
+    const SHOULD_DELETE = process.env.SHOULD_DELETE ? process.env.SHOULD_DELETE === `true` : "true";
+    const SHOULD_PUNISH = process.env.SHOULD_PUNISH ? process.env.SHOULD_PUNISH === `true` : "true";
     const TIMEOUT_DURATION = process.env.TIMEOUT_DURATION ? ms(process.env.TIMEOUT_DURATION as StringValue) : ms("7d");
+    const SCAN_EVERYTHING = process.env.SCAN_EVERYTHING ? process.env.SCAN_EVERYTHING === "true" : true;
 
     const bot = new Client({
         intents: [IntentsBitField.Flags.MessageContent, IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages],
@@ -30,12 +31,26 @@ async function init() {
     });
 
     bot.on("messageCreate", async (message) => {
+        if (message.author.id === bot.user?.id) {
+            return;
+        }
+
         if (IS_WHITELIST) {
             if (!ALLOWED_CHANNELS.includes(message.channel.id)) {
                 return;
             }
         } else {
             if (DISALLOWED_CHANNELS.includes(message.channel.id)) {
+                return;
+            }
+        }
+
+        if (!SCAN_EVERYTHING) {
+            if (message.author.bot) {
+                return;
+            }
+
+            if (message.member && !message.member.moderatable) {
                 return;
             }
         }

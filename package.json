@@ -2,8 +2,9 @@
   "type": "module",
   "private": true,
   "scripts": {
+    "build": "tsc",
     "dev": "node ./src/index.ts",
-    "start": "node ./src/index.ts"
+    "start": "node build/index.js"
   },
   "dependencies": {
     "discord.js": "^14.25.1",
