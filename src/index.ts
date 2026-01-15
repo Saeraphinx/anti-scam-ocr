@@ -56,7 +56,7 @@ async function init() {
                 return;
             }
         }
-
+        console.time(`Analyzing message ${message.id}`);
         let result = await messageAnalyzer.analyzeMessage(message);
         let deleted = "No (Config)";
         let punished = "No (Config)";
@@ -66,26 +66,32 @@ async function init() {
             triggeredIds.push(message.author.id);
             let triggerCount = triggeredIds.filter(id => id === message.author.id).length;
             
-            if (SHOULD_DELETE && message.deletable) {
-                await message.delete().catch((err) => {
-                    console.error(err);
-                    deleted = "No (Error)";
-                }).then(() => {
-                    deleted = "Yes";
-                });
-            } else {
-                console.warn(`Cannot delete message ${message.id}`);
-                deleted = "No (Cannot Delete)";
+            if (SHOULD_DELETE) {
+                if (message.deletable) {
+                    await message.delete().catch((err) => {
+                        console.error(err);
+                        deleted = "No (Error)";
+                    }).then(() => {
+                        deleted = "Yes";
+                    });
+                } else {
+                    console.warn(`Cannot delete message ${message.id}`);
+                    deleted = "No (Cannot Delete)";
+                }
             }
 
             if (SHOULD_PUNISH) {
-                if (message.member && message.member.moderatable && triggerCount >= TRIGGERS_BEFORE_ACTION) {
-                    message.member.timeout(TIMEOUT_DURATION).catch((err) => {
-                        console.error(err);
-                        punished = "No (Error)";
-                    }).then(() => {
-                        punished = `Yes (for ${ms(TIMEOUT_DURATION, { long: true })})`;
-                    });
+                if (message.member && message.member.moderatable) {
+                    if (triggerCount >= TRIGGERS_BEFORE_ACTION) {
+                        message.member.timeout(TIMEOUT_DURATION).catch((err) => {
+                            console.error(err);
+                            punished = "No (Error)";
+                        }).then(() => {
+                            punished = `Yes (for ${ms(TIMEOUT_DURATION, { long: true })})`;
+                        });
+                    } else {
+                        punished = `No (Only ${triggerCount}/${TRIGGERS_BEFORE_ACTION} Triggers)`;
+                    }
                 } else {
                     console.warn(`Cannot punish member ${message.member?.id} in message ${message.id}`);
                     punished = "No (Cannot Moderate)";
@@ -114,6 +120,7 @@ async function init() {
                 }
             }
         }
+        console.timeEnd(`Analyzing message ${message.id}`);
     });
 
     bot.login(DISCORD_TOKEN);
