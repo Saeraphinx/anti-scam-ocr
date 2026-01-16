@@ -83,7 +83,7 @@ async function init() {
             if (SHOULD_PUNISH) {
                 if (message.member && message.member.moderatable) {
                     if (triggerCount >= TRIGGERS_BEFORE_ACTION) {
-                        message.member.timeout(TIMEOUT_DURATION).catch((err) => {
+                        await message.member.timeout(TIMEOUT_DURATION).catch((err) => {
                             console.error(err);
                             punished = "No (Error)";
                         }).then(() => {
