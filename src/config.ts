@@ -12,8 +12,8 @@ export class Config {
     ];*/
     public static LOG_CHANNEL = process.env.LOG_CHANNEL || "";
     public static SHOULD_DELETE = process.env.SHOULD_DELETE ? process.env.SHOULD_DELETE === `true` : "true";
-    public static SHOULD_TIMEOUT = process.env.SHOULD_TIMEOUT ? process.env.SHOULD_TIMEOUT === `true` : "true";
-    public static SHOULD_KICK = process.env.SHOULD_KICK ? process.env.SHOULD_KICK === `true` : "false";
+    public static SHOULD_TIMEOUT = process.env.SHOULD_TIMEOUT ? process.env.SHOULD_TIMEOUT === `true` : true;
+    public static SHOULD_KICK = process.env.SHOULD_KICK ? process.env.SHOULD_KICK === `true` : false;
     public static TIMEOUT_DURATION = process.env.TIMEOUT_DURATION ? ms(process.env.TIMEOUT_DURATION as StringValue) : ms("7d");
     public static SCAN_EVERYTHING = process.env.SCAN_EVERYTHING ? process.env.SCAN_EVERYTHING === "true" : true;
     public static TRIGGERS_BEFORE_ACTION = process.env.TRIGGERS_BEFORE_ACTION ? parseInt(process.env.TRIGGERS_BEFORE_ACTION) : 1;
