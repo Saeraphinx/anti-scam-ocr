@@ -21,7 +21,8 @@ services:
       - IS_WHITELIST: "true"
       - LOG_CHANNEL: "optional-log-channel-id"
       - SHOULD_DELETE: "true"
-      - SHOULD_PUNISH: "false"
+      - SHUOLD_TIMEOUT: "true"
+      - SHOULD_KICK: "false"
       - TIMEOUT_DURATION: "7d"
       - SCAN_EVERYTHING: "true"
       - TRIGGERS_BEFORE_ACTION: "1"
@@ -44,13 +45,15 @@ IS_WHITELIST="true"
 LOG_CHANNEL=""
 # whether to delete messages containing banned words
 SHOULD_DELETE="true"
-# whether to punish users for sending banned words (timeout duration)
-SHOULD_PUNISH="true"
+# whether to kick users for sending banned words
+SHOULD_KICK="false"
+# whether to timeout users for sending banned words 
+SHOULD_TIMEOUT="true"
 # duration of timeout for users who send banned words (see ms library for format)
 TIMEOUT_DURATION="7d"
 # whether to scan messages from all users, including bots & users that the bot cannot moderate
 SCAN_EVERYTHING="true"
-# number of triggers before punishment action is taken (timeout/deletion)
+# number of triggers before punishment action is taken (timeout/kick)
 TRIGGERS_BEFORE_ACTION="1"
 
 ```
