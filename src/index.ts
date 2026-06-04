@@ -16,11 +16,16 @@ async function init() {
     const messageAnalyzer = new MessageAnalyzer();
 
     await messageAnalyzer.initializeWorker();
-    await Commands.registerCommands(bot);
-    await Commands.handleCommand(bot, messageAnalyzer);
+    messageAnalyzer.registerEventListener(bot);
+    await Commands.handleCommand(bot, messageAnalyzer).then(() => {
+        console.log("Command handler registered successfully!");
+    }).catch(err => {
+        console.error(`Error registering command handler: ${err}`);
+    });
 
     bot.on("clientReady", () => {
         console.log(`Logged in as ${bot.user?.tag}!`);
+        Commands.registerCommands(bot);
     });
 
     bot.login(Config.DISCORD_TOKEN);

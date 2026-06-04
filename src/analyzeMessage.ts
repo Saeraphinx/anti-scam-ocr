@@ -92,26 +92,31 @@ export class MessageAnalyzer {
 
     public async registerEventListener(client: Client) {
         client.on("messageCreate", async (message) => {
+            Config.DEBUG ? console.log(`Received message ${message.id} from ${message.author.tag} (${message.author.id}) in channel ${message.channel.id}`) : null;
             if (message.author.id === client.user?.id) {
                 return;
             }
 
             if (Config.IS_WHITELIST) {
                 if (!Config.ALLOWED_CHANNELS.includes(message.channel.id)) {
+                    Config.DEBUG ? console.log(`Skipping message ${message.id} because channel ${message.channel.id} is not in the whitelist`) : null;
                     return;
                 }
             } else {
                 if (Config.DISALLOWED_CHANNELS.includes(message.channel.id)) {
+                    Config.DEBUG ? console.log(`Skipping message ${message.id} because channel ${message.channel.id} is in the blacklist`) : null;
                     return;
                 }
             }
 
             if (!Config.SCAN_EVERYTHING) {
                 if (message.author.bot) {
+                    Config.DEBUG ? console.log(`Skipping message ${message.id} because author is a bot and SCAN_EVERYTHING is false`) : null;
                     return;
                 }
 
                 if (message.member && !message.member.moderatable) {
+                    console.log(`Skipping message ${message.id} from ${message.author.tag} (${message.author.id}) because member is not moderatable (or findable)`);
                     return;
                 }
             }
@@ -121,7 +126,7 @@ export class MessageAnalyzer {
             let punished = "No (Config)";
 
             if (result.foundWords) {
-                console.log(`Detected banned words in message ${message.id}: ${result.bannedWords.join(", ")}`);
+                console.log(`Detected banned words in message ${message.id}: ${result.bannedWords.map(w=> w.word).join(", ")}`);
                 this.triggeredIds.push(message.author.id);
                 let triggerCount = this.triggeredIds.filter(id => id === message.author.id).length;
 

@@ -1,4 +1,4 @@
-import { ApplicationCommandType, ApplicationIntegrationType, Client, ContextMenuCommandBuilder, InteractionContextType, PermissionsBitField, SlashCommandBuilder } from "discord.js";
+import { ApplicationCommandType, ApplicationIntegrationType, Client, ContextMenuCommandBuilder, InteractionContextType, MessageFlagsBitField, PermissionsBitField, SlashCommandBuilder } from "discord.js";
 import { Config } from "./config.ts";
 import { MessageAnalyzer } from "./analyzeMessage.ts";
 
@@ -8,32 +8,33 @@ export class Commands {
             if (!(interaction.isChatInputCommand() || interaction.isContextMenuCommand())) return;
 
             const { commandName } = interaction;
+            console.log(`received command: ${commandName} from user ${interaction.user.tag} (${interaction.user.id}) in guild ${interaction.guild?.name} (${interaction.guildId})`);
             if (interaction.isChatInputCommand()) {
                 if (commandName === "reloadconfig") {
                     Config.readEnvConfig();
                     Config.readBannedWords();
-                    await interaction.reply({ content: "Configuration reloaded!", ephemeral: true });
+                    await interaction.reply({ content: "Configuration reloaded!", flags: MessageFlagsBitField.Flags.Ephemeral });
                 } else if (commandName === "addbannedword") {
                     const word = interaction.options.getString("word", true);
                     Config.addBannedWord(word);
-                    await interaction.reply({ content: `Added "${word}" to banned words list!`, ephemeral: true });
+                    await interaction.reply({ content: `Added "${word}" to banned words list!`, flags: MessageFlagsBitField.Flags.Ephemeral });
                 } else if (commandName === "removebannedword") {
                     const word = interaction.options.getString("word", true);
                     Config.removeBannedWord(word);
-                    await interaction.reply({ content: `Removed "${word}" from banned words list!`, ephemeral: true });
+                    await interaction.reply({ content: `Removed "${word}" from banned words list!`, flags: MessageFlagsBitField.Flags.Ephemeral });
                 } else if (commandName === "listbannedwords") {
                     const bannedWords = Config.readBannedWords();
-                    await interaction.reply({ content: `Banned words:\n${bannedWords.join("\n")}`, ephemeral: true });
+                    await interaction.reply({ content: `Banned words:\n${bannedWords.join("\n")}`, flags: MessageFlagsBitField.Flags.Ephemeral });
                 } else {
-                    await interaction.reply({ content: "Unknown command!", ephemeral: true });
+                    await interaction.reply({ content: "Unknown command!", flags: MessageFlagsBitField.Flags.Ephemeral });
                 }
             } else if (interaction.isContextMenuCommand()) {
                 if (commandName === "Check OCR Text") {
-                    interaction.deferReply({ ephemeral: true });
+                    await interaction.deferReply({ flags: MessageFlagsBitField.Flags.Ephemeral });
                     interaction.channel?.messages.fetch(interaction.targetId).then(message => {
                         messageAnalyzer.analyzeMessage(message).then(result => {
                             if (result.foundWords) {
-                                interaction.editReply({ content: `Found banned words in the message! Detected words: ${[...new Set(result.bannedWords.map(bw => bw.word))].join(", ")}` });
+                                interaction.editReply({ content: `Found banned words in the message!\n\`\`\`json\n${JSON.stringify(result.bannedWords, null, 2)}\`\`\`` });
                             } else {
                                 interaction.editReply({ content: "No banned words found in the message." });
                             }
@@ -46,7 +47,7 @@ export class Commands {
                         interaction.editReply({ content: "An error occurred while fetching the message." });
                     });
                 } else {
-                    await interaction.reply({ content: "Unknown command!", ephemeral: true });
+                    await interaction.reply({ content: "Unknown command!", flags: MessageFlagsBitField.Flags.Ephemeral });
                 }
             }           
         });
@@ -97,6 +98,10 @@ export class Commands {
             removeBannedWordCommand,
             listBannedWordsCommand,
             checkMessageCommand
-        ]);
+        ]).then(() => {
+            console.log("Commands registered successfully!");
+        }).catch(err => {
+            console.error(`Error registering commands: ${err}`);
+        });
     }
 }
