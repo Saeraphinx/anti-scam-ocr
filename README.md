@@ -12,12 +12,13 @@ services:
     image: ghcr.io/saeraphinx/anti-scam-ocr:latest
     container_name: anti-scam-ocr
     restart: unless-stopped
+    volumes:
+      - ./config:/app/config
     environment:
       - DISCORD_TOKEN: "your-discord-bot-token"
       - ALLOWED_CHANNELS: "1234,5678"
       - DISALLOWED_CHANNELS: "1234,5678"
       - IS_WHITELIST: "true"
-      - BANNED_WORDS: "crypto casino,special promo code,withdrawl successful,free gift"
       - LOG_CHANNEL: "optional-log-channel-id"
       - SHOULD_DELETE: "true"
       - SHOULD_PUNISH: "false"
@@ -39,8 +40,6 @@ ALLOWED_CHANNELS=""
 DISALLOWED_CHANNELS=""
 # whether to use the allowed channels or disallowed channels variable
 IS_WHITELIST="true"
-# comma separated list of banned words/phrases, not case sensitive. Recommended to have a few words/phrases instead of just one to reduce false positives
-BANNED_WORDS="crypto casino,special promo code,withdrawl successful,free gift"
 # channel ID for logging detected messages
 LOG_CHANNEL=""
 # whether to delete messages containing banned words
