@@ -1,4 +1,4 @@
-import ms, { StringValue } from "ms";
+import ms, { type StringValue } from "ms";
 import fs from "fs";
 
 export class Config {

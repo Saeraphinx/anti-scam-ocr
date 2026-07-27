@@ -1,4 +1,4 @@
-import { Client, Colors, EmbedBuilder, Message, Snowflake } from "discord.js";
+import { Client, Colors, EmbedBuilder, Message, type Snowflake } from "discord.js";
 import { createWorker } from "tesseract.js";
 import { Config } from "./config.ts";
 import ms from "ms";
@@ -18,7 +18,7 @@ export class MessageAnalyzer {
     }
 
     public async initializeWorker() {
-        this.ocrWorker = await createWorker("eng");
+        this.ocrWorker = await createWorker(["eng", "rus"]);
     }
 
     public async analyzeMessage(message: Message): Promise<{ foundWords: false } | { foundWords: true, bannedWords: { url: string, word: string }[] }> {

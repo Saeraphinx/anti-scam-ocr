@@ -1,4 +1,4 @@
-import { ActivityType, Client, Colors, EmbedBuilder, IntentsBitField, Snowflake } from "discord.js";
+import { ActivityType, Client, IntentsBitField } from "discord.js";
 import { MessageAnalyzer } from "./analyzeMessage.ts";
 import { Config } from "./config.ts";
 import { Commands } from "./commands.ts";

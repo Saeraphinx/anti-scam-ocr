@@ -9,7 +9,6 @@
     "rootDir": "src", 
     "moduleResolution": "node16",
     "rewriteRelativeImportExtensions": true,
-    "baseUrl": ".",
     "resolveJsonModule": true,
     "allowJs": true,
     "sourceMap": true,
