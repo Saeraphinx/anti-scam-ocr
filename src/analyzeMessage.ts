@@ -1,28 +1,39 @@
 import { Client, Colors, EmbedBuilder, Message, type Snowflake } from "discord.js";
-import { createWorker } from "tesseract.js";
+import Tesseract, { createWorker } from "tesseract.js";
 import { Config } from "./config.ts";
 import ms from "ms";
+import os from "os";
 
 export class MessageAnalyzer {
     // "The requested module 'tesseract.js' does not provide an export named 'Worker'"
-    private ocrWorker: Awaited<ReturnType<typeof createWorker>> | null;
+    private ocrWorkers: Awaited<ReturnType<typeof createWorker>>[] = [];
     private static URL_REGEX = /(https?:\/\/[^\s]+)/g;
     private triggeredIds: Snowflake[] = [];
+    private workerCount = 4;
 
     public async destroyWorker() {
-        if (!this.ocrWorker) {
+        if (!this.ocrWorkers || this.ocrWorkers.length === 0) {
             return;
         }
-        await this.ocrWorker.terminate();
-        this.ocrWorker = null;
+        for (let worker of this.ocrWorkers) {
+            await worker.terminate();
+        }
+        this.ocrWorkers = [];
     }
 
     public async initializeWorker() {
-        this.ocrWorker = await createWorker(["eng", "rus"]);
+        this.ocrWorkers = [];
+        if (this.workerCount > os.availableParallelism()) {
+            console.warn(`Worker count (${this.workerCount}) is greater than available parallelism (${os.availableParallelism()}). Reducing worker count to ${os.availableParallelism()}.`);
+            this.workerCount = os.availableParallelism();
+        }   
+        for (let i = 0; i < this.workerCount; i++) {
+            this.ocrWorkers.push(await createWorker([`eng`, "rus"]));
+        }       
     }
 
     public async analyzeMessage(message: Message): Promise<{ foundWords: false } | { foundWords: true, bannedWords: { url: string, word: string }[] }> {
-        if (!this.ocrWorker) {
+        if (!this.ocrWorkers || this.ocrWorkers.length === 0) {
             throw new Error("OCR worker not initialized");
         }
         let attachmentUrls: string[] = [];
@@ -65,11 +76,10 @@ export class MessageAnalyzer {
             return { foundWords: false };
         }
 
-        const worker = await createWorker('eng');
         let bannedWords = [];
         let results = await Promise.all(
-            attachmentUrls.map(async (attachment) => {
-                return { url: attachment, ocr: await worker.recognize(attachment) };
+            attachmentUrls.map(async (attachment, i) => {
+                return { url: attachment, ocr: await this.ocrWorkers[i % this.workerCount].recognize(attachment) };
             })
         );
         for (let ret of results) {
