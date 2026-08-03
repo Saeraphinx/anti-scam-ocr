@@ -75,7 +75,7 @@ export class Config {
             }
 
             try {
-                this.bannedWords = fs.readFileSync(this.bannedWordsFilePath, "utf-8").split("\n").map(word => word.trim()).filter(word => word.length > 0 || !word.startsWith("#") || !word.startsWith("//"));
+                this.bannedWords = fs.readFileSync(this.bannedWordsFilePath, "utf-8").split("\n").map(word => word.trim()).filter(word => word.length > 0 && !word.startsWith("#") && !word.startsWith("//"));
                 // overwrite the file if it is empty and there are banned words in the environment variable
                 if (this.bannedWords.length === 0 && process.env.BANNED_WORDS && process.env.BANNED_WORDS.trim().length > 0) {
                     console.warn("bannedWords.txt is empty, overwriting with saved banned words.");
