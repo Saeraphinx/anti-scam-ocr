@@ -1,7 +1,6 @@
 import ms, { type StringValue } from "ms";
 import fs from "fs";
-
-const bannedWordsFilePath = "./config/bannedWords.txt";
+import path from "path";
 
 export class Config {
     public static DISCORD_TOKEN = process.env.DISCORD_TOKEN || "";
@@ -26,6 +25,7 @@ export class Config {
     ];
 
     private static lastConfigRead: Date = new Date(0);
+    private static bannedWordsFilePath = path.resolve("./config/bannedWords.txt");
 
     public static readEnvConfig() {
         this.DISCORD_TOKEN = process.env.DISCORD_TOKEN || this.DISCORD_TOKEN;
@@ -65,21 +65,21 @@ export class Config {
     public static readBannedWords() {
         if (this.lastConfigRead.getTime() < new Date().getTime() - ms("1m")) {
             // Check if bannedWords.txt exists, if not create it with default banned words
-            if (!fs.existsSync(bannedWordsFilePath)) {
-                let pathMinusFile = bannedWordsFilePath.substring(0, bannedWordsFilePath.lastIndexOf("/"));
+            if (!fs.existsSync(this.bannedWordsFilePath)) {
+                let pathMinusFile = this.bannedWordsFilePath.substring(0, this.bannedWordsFilePath.lastIndexOf("/"));
                 if (!fs.existsSync(pathMinusFile)) {
                     fs.mkdirSync(pathMinusFile, { recursive: true });
                 }
-                fs.writeFileSync(bannedWordsFilePath, this.bannedWords.join("\n"));
+                fs.writeFileSync(this.bannedWordsFilePath, this.bannedWords.join("\n"));
                 console.warn("bannedWords.txt not found, created default file with default banned words.");
             }
 
             try {
-                this.bannedWords = fs.readFileSync(bannedWordsFilePath, "utf-8").split("\n").map(word => word.trim()).filter(word => word.length > 0 || !word.startsWith("#") || !word.startsWith("//"));
+                this.bannedWords = fs.readFileSync(this.bannedWordsFilePath, "utf-8").split("\n").map(word => word.trim()).filter(word => word.length > 0 || !word.startsWith("#") || !word.startsWith("//"));
                 // overwrite the file if it is empty and there are banned words in the environment variable
                 if (this.bannedWords.length === 0 && process.env.BANNED_WORDS && process.env.BANNED_WORDS.trim().length > 0) {
                     console.warn("bannedWords.txt is empty, overwriting with saved banned words.");
-                    fs.writeFileSync(bannedWordsFilePath, this.bannedWords.join("\n"));
+                    fs.writeFileSync(this.bannedWordsFilePath, this.bannedWords.join("\n"));
                 }
                 this.lastConfigRead = new Date();
             } catch (error) {
@@ -90,7 +90,7 @@ export class Config {
     }
 
     public static addBannedWord(word: string) {
-        fs.appendFileSync(bannedWordsFilePath, `\n${word}`);
+        fs.appendFileSync(this.bannedWordsFilePath, `\n${word}`);
         this.bannedWords.push(word);
     }
 
@@ -98,7 +98,7 @@ export class Config {
         const index = this.bannedWords.indexOf(word);
         if (index !== -1) {
             this.bannedWords.splice(index, 1);
-            fs.writeFileSync(bannedWordsFilePath, this.bannedWords.join("\n"));
+            fs.writeFileSync(this.bannedWordsFilePath, this.bannedWords.join("\n"));
         }
     }
 }
