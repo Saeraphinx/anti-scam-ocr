@@ -202,7 +202,7 @@ export class MessageAnalyzer {
                         let embed = new EmbedBuilder()
                             .setAuthor({ name: `${message.author.tag} (${message.author.id})`, iconURL: message.author.displayAvatarURL() })
                             .setTitle("Detected OCR Scam Message")
-                            .setDescription(`Triggered OCR with words:\n${words.join(", ")}\n\n**URLs:**\n${urls.join("\n")}`)
+                            .setDescription(`Triggered OCR with words:\n${words.map(w => `\`${w}\``).join(", ")}\n\n**URLs:**\n${urls.join("\n")}`)
                             .addFields({ name: "User", value: `${message.author.toString()}`, inline: true })
                             .addFields({ name: "Channel", value: `${message.channel.toString()}`, inline: true })
                             .addFields({ name: "Message ID", value: `${message.id}`, inline: true })

@@ -1,4 +1,4 @@
-import { ApplicationCommandType, ApplicationIntegrationType, Client, ContextMenuCommandBuilder, InteractionContextType, MessageFlagsBitField, PermissionsBitField, SlashCommandBuilder } from "discord.js";
+import { ApplicationCommandType, ApplicationIntegrationType, Client, Colors, ContextMenuCommandBuilder, EmbedBuilder, InteractionContextType, MessageFlagsBitField, PermissionsBitField, SlashCommandBuilder, User } from "discord.js";
 import { Config } from "./config.ts";
 import { MessageAnalyzer } from "./analyzeMessage.ts";
 
@@ -38,7 +38,7 @@ export class Commands {
                             } else {
                                 interaction.editReply({ content: "No banned words found in the message." });
                             }
-                        }).catch(err => {                            
+                        }).catch(err => {
                             console.error(`Error analyzing message ${message.id}: ${err}`);
                             interaction.editReply({ content: "An error occurred while analyzing the message." });
                         });
@@ -49,7 +49,7 @@ export class Commands {
                 } else {
                     await interaction.reply({ content: "Unknown command!", flags: MessageFlagsBitField.Flags.Ephemeral });
                 }
-            }           
+            }
         });
     }
 
@@ -59,8 +59,8 @@ export class Commands {
             .setDescription("Reload the bot's configuration from environment variables and bannedWords.txt")
             .setContexts(InteractionContextType.Guild)
             .setIntegrationTypes(ApplicationIntegrationType.GuildInstall)
-            .setDefaultMemberPermissions(PermissionsBitField.Flags.Administrator) 
-    
+            .setDefaultMemberPermissions(PermissionsBitField.Flags.Administrator)
+
         let addBannedWordCommand = new SlashCommandBuilder()
             .setName("addbannedword")
             .setDescription("Add a word to the banned words list")
@@ -75,7 +75,7 @@ export class Commands {
             .addStringOption(option => option.setName("word").setDescription("The word to remove").setRequired(true))
             .setContexts(InteractionContextType.Guild)
             .setIntegrationTypes(ApplicationIntegrationType.GuildInstall)
-            .setDefaultMemberPermissions(PermissionsBitField.Flags.ManageGuild) 
+            .setDefaultMemberPermissions(PermissionsBitField.Flags.ManageGuild)
 
         let listBannedWordsCommand = new SlashCommandBuilder()
             .setName("listbannedwords")
@@ -103,5 +103,30 @@ export class Commands {
         }).catch(err => {
             console.error(`Error registering commands: ${err}`);
         });
+    }
+
+    public static async sendWordUpdateLog(client: Client, user: User, action: "added" | "removed", word: string) {
+        if (!Config.LOG_CHANNEL) {
+            console.warn("LOG_CHANNEL is not set, cannot send log message.");
+            return;
+        }
+
+        const logChannel = await client.channels.fetch(Config.LOG_CHANNEL).catch(err => {
+            console.error(`Error fetching log channel with ID ${Config.LOG_CHANNEL}: ${err}`);
+            return null;
+        });
+
+        if (!logChannel || !logChannel.isSendable()) {
+            console.error(`Log channel with ID ${Config.LOG_CHANNEL} is not a text channel.`);
+            return;
+        }
+
+        let embed = new EmbedBuilder()
+            .setAuthor({ name: `${user.displayName}`, iconURL: user.displayAvatarURL() })
+            .setTitle("Banned Words List Updated")
+            .setDescription(`**Action:** ${action === "added" ? "Added" : "Removed"}\n**Word:** ${word}`)
+            .setColor(action === "added" ? Colors.Green : Colors.Red)
+            .setTimestamp()
+        logChannel.send({ embeds: [embed] }).catch(console.error);
     }
 }

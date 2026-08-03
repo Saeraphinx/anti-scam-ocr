@@ -21,7 +21,7 @@ services:
       - IS_WHITELIST: "true"
       - LOG_CHANNEL: "optional-log-channel-id"
       - SHOULD_DELETE: "true"
-      - SHUOLD_TIMEOUT: "true"
+      - SHOULD_TIMEOUT: "true"
       - SHOULD_KICK: "false"
       - TIMEOUT_DURATION: "7d"
       - SCAN_EVERYTHING: "true"
