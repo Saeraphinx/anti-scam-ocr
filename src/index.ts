@@ -6,6 +6,7 @@ import { Commands } from "./commands.ts";
 
 async function init() {
     Config.readEnvConfig();
+    Config.readBannedWords();
     const bot = new Client({
         intents: [IntentsBitField.Flags.MessageContent, IntentsBitField.Flags.Guilds, IntentsBitField.Flags.GuildMessages],
         presence: {
